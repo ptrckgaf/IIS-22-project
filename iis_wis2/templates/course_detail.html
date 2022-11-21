@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}
+    Detail kurzu {{ course_name }}
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <h2>Detail kurzu:</h2>
+    <div class="container">
+        <form method="POST" class="form-register" style="color:white">
+            {{ courses_detail_form.hidden_tag() }}
+            <br>
+            {{ courses_detail_form.name.label() }}
+            {{ courses_detail_form.name(class="form-control", placeholder="Název") }}
+            {{ courses_detail_form.course_type.label() }}
+            {{ courses_detail_form.course_type(class="form-control", placeholder="Typ kurzu") }}
+            {{ courses_detail_form.description.label() }}
+            {{ courses_detail_form.description(class="form-control", placeholder="Popis kurzu") }}
+            {{ courses_detail_form.price.label() }}
+            {{ courses_detail_form.price(class="form-control", placeholder="Cena kurzu") }}
+            {{ courses_detail_form.users_limit.label() }}
+            {{ courses_detail_form.users_limit(class="form-control", placeholder="Limit kurzu") }}
+            <br>
+            {{ courses_detail_form.submit(class="btn btn-lg btn-block btn-primary") }}
+        </form>
+    </div>
+    <br>
+    <h2>Nepotvrzené registrace studentů do kurzu:</h2>
+    <div class="container">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Login</th>
+               <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                 {{ course_registration_form.hidden_tag() }}
+                 {% for login in unconfirmed_students_logins %}
+                 <tr>
+                     <td>{{ login }}</td>
+                     <td><input name="confirmed_student_login {{ login }}" id="{{ login }}" type="checkbox" value="{{ login }}"/></td>
+                 </tr>
+               {% endfor %}
+                 <td>{{ course_registration_form.submit(class="btn btn-lg btn-block btn-primary") }} </td>
+             </form>
+         </tbody>
+      </table>
+    </div>
+</body>
+{% endblock %}

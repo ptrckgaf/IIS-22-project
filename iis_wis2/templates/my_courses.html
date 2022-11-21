@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Přehled mých kurzů
+{% endblock %}
+
+{% block content %}
+<div class="row" style="margin-top:20px; margin-left:20px">
+   <div class="col-8">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+               <!-- Your Columns HERE -->
+               <th scope="col">Název</th>
+               <th scope="col">Cena</th>
+               <th scope="col">Typ kurzu</th>
+               <th scope="col">Garant kurzu</th>
+               <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                {{ form.hidden_tag() }}
+                {% for course in courses %}
+                    {% if course.confirmed %}
+                         {% include 'includes/course_modals.html' %}
+                           <tr>
+                              <td>{{ course.name }}</td>
+                              <td>{{ course.price }} Kč</td>
+                              <td>{{ course.course_type.name }}</td>
+                              <td>{{ course.course_guarantor.login }}</td>
+                              <td>
+                                  <button type="button" class="btn btn-outline btn-info" data-toggle="modal" data-target="#Modal-MoreInfo-{{ course.name }}">Detail</button>
+                                  <input id="{{course.name}}" name="{{course.name}}" type="hidden" value="{{course.name}}">
+                                  {{ form.submit(class="btn btn-outline btn-danger") }}
+                              </td>
+                          </tr>
+                    {% endif %}
+               {% endfor %}
+             </form>
+         </tbody>
+      </table>
+   </div>
+</div>
+{% endblock %}

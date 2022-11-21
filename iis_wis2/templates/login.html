@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}
+    Přihlašovací stránka
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <div class="container">
+        <form method="POST" class="form-signin" style="color:white">
+            {{ form.hidden_tag() }}
+            <br>
+            {{ form.login.label() }}
+            {{ form.login(class="form-control", placeholder="Login") }}
+            {{ form.password.label() }}
+            {{ form.password(class="form-control", placeholder="Heslo") }}
+            <br>
+            {{ form.submit(class="btn btn-lg btn-block btn-primary") }}
+        </form>
+    </div>
+</body>
+{% endblock %}

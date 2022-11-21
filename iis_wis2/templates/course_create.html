@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}
+    Course Create Page
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <div class="container">
+        <form method="POST" class="form-register" style="color:white">
+            {{ form.hidden_tag() }}
+            <br>
+            {{ form.name.label() }}
+            {{ form.name(class="form-control", placeholder="Název") }}
+            {{ form.course_type.label() }}
+            {{ form.course_type(class="form-control", placeholder="Typ kurzu") }}
+            {{ form.description.label() }}
+            {{ form.description(class="form-control", placeholder="Popis kurzu") }}
+            {{ form.price.label() }}
+            {{ form.price(class="form-control", placeholder="Cena kurzu") }}
+            {{ form.users_limit.label() }}
+            {{ form.users_limit(class="form-control", placeholder="Limit kurzu") }}
+            <br>
+            {{ form.submit(class="btn btn-lg btn-block btn-primary") }}
+        </form>
+    </div>
+</body>
+{% endblock %}
