@@ -15,15 +15,19 @@ class UserType(enum.Enum):
 
 
 class CourseType(enum.Enum):
-    type1 = 1
-    type2 = 2
-    type3 = 3
+    compulsory = 'povinný'
+    optional = 'volitelný'
 
 
 class TermType(enum.Enum):
     term_type1 = 1
     term_type2 = 2
     term_type3 = 3
+
+class CourseLanguage(enum.Enum):
+    czech = 'cz'
+    english = 'en'
+
 
 
 @login_manager.user_loader
@@ -79,6 +83,15 @@ class User(Base, UserMixin):
     def is_admin(self):
         return self.user_type == UserType.administrator
 
+    def is_student(self):
+        return self.user_type == UserType.student
+
+    def is_teacher(self):
+        return self.user_type == UserType.teacher
+
+    def is_guarantor(self):
+        return self.user_type == UserType.guarantor
+
     @property
     def password(self):
         return self.password
@@ -96,6 +109,10 @@ class Course(Base, UserMixin):
     name = Column(String(length=30), primary_key=True)
     description = Column(String(length=1024))
     course_type = Column(Enum(CourseType), nullable=False)
+    language = Column(Enum(CourseLanguage), nullable=False)
+    credit_count = Column(Integer(), nullable=False)
+    points = Column(Integer(), nullable=False)
+    grade = Column(String(length=1), nullable=False)
     price = Column(Integer(), nullable=False)
     news = Column(String(length=1024))
     confirmed = Column(Boolean(), nullable=False)

@@ -11,14 +11,14 @@ Přehled kurzů
          <thead>
             <tr>
                 <!-- Your Columns HERE -->
-                <th scope="col">Název</th>
-                <th scope="col">Cena</th>
-                <th scope="col">Typ kurzu</th>
-                <th scope="col">Garant kurzu</th>
-                <th scope="col">Limit</th>
-                <th scope="col">Počet studentů</th>
-                {% if current_user.is_authenticated %}
-                    <th scope="col">Registrovat kurz</th>
+                <th scope="col">Název kurzu</th>
+                <th scope="col">Jazyk</th>
+                <th scope="col">Typ</th>
+                <th scope="col">Garant</th>
+                <th scope="col">Počet kreditů</th>
+                {% if current_user.is_student %}
+                    <th scope="col">Body</th>
+                    <th scope="col">Známka</th>
                 {% endif %}
                <th scope="col"></th>
             </tr>
@@ -31,11 +31,14 @@ Přehled kurzů
                          {% include 'includes/course_modals.html' %}
                            <tr>
                                <td>{{ course.name }}</td>
-                               <td>{{ course.price }} Kč</td>
+                               <td>{{ course.language.name }}</td>
                                <td>{{ course.course_type.name }}</td>
                                <td>{{ course.course_guarantor.login }}</td>
-                               <td>{{ course.users_limit }}</td>
-                               <td>{{ course.registered_users|length }}</td>
+                               <td>{{ course.credit_count }}</td>
+                               {% if current_user.is_student %}
+                                    <td>{{ course.points }}</td>
+                                    <td>{{ course.grade }}</td>
+                               {% endif %}
                                {% if current_user.is_authenticated %}
                                   <td>
                                       {% if course.name in registered_courses_names %}

@@ -133,6 +133,7 @@ def course_create_page():
         with Session() as session:
             course_to_create = Course(name=form.name.data,
                                 course_type=form.course_type.data,
+                                language=form.language.data,
                                 description=form.description.data,
                                 price=form.price.data,
                                 course_guarantor_id=current_user.id,
@@ -242,9 +243,13 @@ def course_detail_page(course_name):
                                course_registration_form=course_registration_form,
                                unconfirmed_students_logins=unconfirmed_students_logins)
 
-
 @app.route('/logout')
 def logout_page():
     logout_user()
     flash("You have been logged out!", category='info')
     return redirect(url_for("home_page"))
+
+
+# @app.route('/student_home', methods=['GET', 'POST'])
+# def student_home_page():
+#

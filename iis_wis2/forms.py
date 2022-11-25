@@ -41,10 +41,11 @@ class CourseCreateForm(FlaskForm):
     name = StringField(label='Název:', validators=[Length(min=2, max=30), DataRequired()])
     course_type = SelectField(label='Typ kurzu:', validators=[DataRequired()],
                             choices=[course_type.name for course_type in CourseType])
+    language = StringField(label='Jazyk kurzu:', validators=[DataRequired()])
     description = StringField(label='Popis:', validators=[Length(min=0, max=1024), DataRequired()])
     price = IntegerField(label='Cena kurzu:', validators=[DataRequired()])
     users_limit = IntegerField(label='Limit kurzu:', validators=[DataRequired()])
-    submit = SubmitField(label='Odeslat žádost o vytvořní kurzu')
+    submit = SubmitField(label='Odeslat žádost o registraci kurzu')
 
 
 class CourseRegistrationForm(FlaskForm):
@@ -68,6 +69,7 @@ class CoursesForm(FlaskForm):
 
 class CoursesDetailsForm(FlaskForm):
     name = StringField(label='Název:', validators=[Length(min=2, max=30), DataRequired()])
+    course_language = StringField(label='Jazyk:', validators=[DataRequired()])
     course_type = SelectField(label='Typ kurzu:', validators=[DataRequired()],
                               choices=[course_type.name for course_type in CourseType])
     description = StringField(label='Popis:', validators=[Length(min=0, max=1024), DataRequired()])
