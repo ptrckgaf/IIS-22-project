@@ -9,9 +9,7 @@ from sqlalchemy import select, update
 
 class UserType(enum.Enum):
     administrator = 1
-    student = 2
-    teacher = 3
-    guarantor = 4
+    user = 2
 
 
 class CourseType(enum.Enum):
@@ -94,16 +92,9 @@ class User(Base, UserMixin):
         return self.user_type == UserType.administrator
 
     @property
-    def is_student(self):
-        return self.user_type == UserType.student
+    def is_user(self):
+        return self.user_type == UserType.user
 
-    @property
-    def is_teacher(self):
-        return self.user_type == UserType.teacher
-
-    @property
-    def is_guarantor(self):
-        return self.user_type == UserType.guarantor
 
     @property
     def password(self):
@@ -125,7 +116,7 @@ class Course(Base, UserMixin):
     language = Column(Enum(CourseLanguage), nullable=False)
     credit_count = Column(Integer(), nullable=False)
     grade = Column(String(length=1), nullable=False)
-    price = Column(Integer(), nullable=False)
+
     news = Column(String(length=1024))
     confirmed = Column(Boolean(), nullable=False)
     users_limit = Column(Integer(), nullable=False)
@@ -146,7 +137,7 @@ class Term(Base, UserMixin):
     id = Column(Integer(), primary_key=True)
     name = Column(String(length=30), nullable=False)
     term_type = Column(Enum(TermType), nullable=False)
-    maximum_score = Column(Integer(), nullable=False)
+    maximum_points = Column(Integer(), nullable=False)
     description = Column(String(length=1024))
     start_time = Column(DateTime(), nullable=False)
     end_time = Column(DateTime(), nullable=False)
@@ -159,6 +150,6 @@ class Term(Base, UserMixin):
 class Room(Base, UserMixin):
     __tablename__ = "room"
     id = Column(Integer(), primary_key=True)
-    name = Column(String(length=30), nullable=False)
+    number = Column(String(length=30), nullable=False)
     terms = relationship('Term', backref='room')
     courses = relationship('Course', backref='room')
