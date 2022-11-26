@@ -1,7 +1,7 @@
 import enum
 from iis_wis2 import Base, login_manager, engine, bcrypt
 from flask_login import UserMixin
-from sqlalchemy import Enum, Column, Integer, String, Table, ForeignKey, Date, Boolean
+from sqlalchemy import Enum, Column, Integer, String, Table, ForeignKey, Date, Boolean, Time, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, update
@@ -29,6 +29,15 @@ class CourseLanguage(enum.Enum):
     english = 'en'
 
 
+class DaysOfTheWeek(enum.Enum):
+    monday = 'Pondělí'
+    tuesday = 'Úterý'
+    wednesday = 'Středa'
+    thursday = 'Čtvrtek'
+    friday = 'Pátek'
+    saturday = 'Sobota'
+    sunday = 'Neděle'
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -49,7 +58,7 @@ class UsersHaveRegisteredTerms(Base):
     __tablename__ = "users_have_registered_terms"
     user_id = Column(ForeignKey("user.id"), primary_key=True)
     term_id = Column(ForeignKey("term.id"),  primary_key=True)
-    evaluation = Column(Integer())
+    obtained_points = Column(Integer(), nullable=False, default=0)
 
 
 class UsersHaveRegisteredCourses(Base):
@@ -57,6 +66,7 @@ class UsersHaveRegisteredCourses(Base):
     user_id = Column(ForeignKey("user.id"), primary_key=True)
     course_name = Column(ForeignKey("course.name"),  primary_key=True)
     registration_confirmed = Column(Boolean(), nullable=False, default=False)
+    grade = Column(String(length=1), nullable=False)
     user = relationship('User', viewonly=True)
 
 
@@ -114,12 +124,15 @@ class Course(Base, UserMixin):
     course_type = Column(Enum(CourseType), nullable=False)
     language = Column(Enum(CourseLanguage), nullable=False)
     credit_count = Column(Integer(), nullable=False)
-    points = Column(Integer(), nullable=False)
     grade = Column(String(length=1), nullable=False)
     price = Column(Integer(), nullable=False)
     news = Column(String(length=1024))
     confirmed = Column(Boolean(), nullable=False)
     users_limit = Column(Integer(), nullable=False)
+    day_of_the_week = Column(Enum(DaysOfTheWeek), nullable=False)
+    start_time = Column(Time(), nullable=False)
+    end_time = Column(Time(), nullable=False)
+    room_id = Column(Integer(), ForeignKey('room.id'), nullable=False)
     course_guarantor_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
     users_in_course = relationship(
         "User", secondary="users_have_registered_courses", back_populates="registered_courses")
@@ -133,8 +146,10 @@ class Term(Base, UserMixin):
     id = Column(Integer(), primary_key=True)
     name = Column(String(length=30), nullable=False)
     term_type = Column(Enum(TermType), nullable=False)
+    maximum_score = Column(Integer(), nullable=False)
     description = Column(String(length=1024))
-    date = Column(Date(), nullable=False)
+    start_time = Column(DateTime(), nullable=False)
+    end_time = Column(DateTime(), nullable=False)
     course_name = Column(String(length=30), ForeignKey('course.name'), nullable=True)
     room_id = Column(Integer(), ForeignKey('room.id'), nullable=True)
     users_in_term = relationship(
@@ -146,3 +161,4 @@ class Room(Base, UserMixin):
     id = Column(Integer(), primary_key=True)
     name = Column(String(length=30), nullable=False)
     terms = relationship('Term', backref='room')
+    courses = relationship('Course', backref='room')
