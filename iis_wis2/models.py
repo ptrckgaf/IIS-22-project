@@ -83,12 +83,15 @@ class User(Base, UserMixin):
     def is_admin(self):
         return self.user_type == UserType.administrator
 
+    @property
     def is_student(self):
         return self.user_type == UserType.student
 
+    @property
     def is_teacher(self):
         return self.user_type == UserType.teacher
 
+    @property
     def is_guarantor(self):
         return self.user_type == UserType.guarantor
 

@@ -1,10 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block title %}
+Přehled užívatelů
+{% endblock %}
+
+{% block content %}
+<div class="row" style="margin-top:20px; margin-left:20px">
+   <div class="col-8">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Login</th>
+                <th scope="col">Meno</th>
+                <th scope="col">Email</th>
+               <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                {{ form.hidden_tag() }}
+                {% for user in users %}
+                           <tr>
+                               <td>{{ user.login }}</td>
+                               <td>{{ user.username }}</td>
+                               <td>{{ user.email_address }}</td>
+                          </tr>
+               {% endfor %}
+             </form>
+         </tbody>
+      </table>
+   </div>
+</div>
+{% endblock %}

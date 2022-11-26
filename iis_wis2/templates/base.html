@@ -23,6 +23,26 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('user_account_page') }}">Účet</a>
                 </li>
+
+                {% if current_user.is_admin %}
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{ url_for('register_page') }}">Vytvořit nového uživatele<span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{ url_for('courses_to_confirm_page') }}">Kurzy ke schválení<span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{ url_for('users_page') }}">Přehled užívatelů<span class="sr-only">(current)</span></a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('course_create_page') }}">Vytvořit nový kurz</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('courses_page') }}">Registrace kurzů</a>
+                    </li>
+                {% endif %}
+
                 {% if current_user.is_student %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('courses_page') }}">Přehled kurzů</a>
@@ -32,34 +52,15 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('courses_page') }}">Termíny</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('courses_page') }}">Registrace kurzů</a>
-                    <li class="nav-item">
                 {% endif %}
+
+
                 {% if current_user.is_teacher %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('courses_page') }}">Přehled kurzů</a>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('courses_page') }}">Rozvrh</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('courses_page') }}">Termíny</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('course_create_page') }}">Registrace kurzů</a>
-                    <li class="nav-item">
+                <!---TODO--->
                 {% endif %}
-                {% if current_user.is_admin %}
-                    <!---<li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('course_create_page') }}">Vytvořit nový kurz</a>
-                    </li>--->
-                    <li class="nav-item active">
-                        <a class="nav-link" href="{{ url_for('register_page') }}">Vytvořit nového uživatele<span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item active">
-                        <a class="nav-link" href="{{ url_for('courses_to_confirm_page') }}">Kurzy ke schválení<span class="sr-only">(current)</span></a>
-                    </li>
-                {% endif %}
+
+
+
             {% else %}
             <li class="nav-item active">
                 <a class="nav-link" href="{{ url_for('home_page') }}">Přihlásit<span class="sr-only">(current)</span></a>
@@ -69,16 +70,9 @@
         </ul>
           {% if current_user.is_authenticated %}
             <ul class="navbar-nav">
-                {% if current_user.is_admin %}
                 <li class="nav-item">
-                    <a class="nav-link">Jste přihlášen jako admin (Login: {{ current_user.login }})</a>
+                    <a class="nav-link">Jste přihlášen jako: {{ current_user.login }}</a>
                 </li>
-                {% endif %}
-                {% if current_user.is_student %}
-                <li class="nav-item">
-                    <a class="nav-link">Jste přihlášen jako student (Login: {{ current_user.login }})</a>
-                </li>
-                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('logout_page') }}">Odhlásit</a>
                 </li>
