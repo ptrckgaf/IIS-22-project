@@ -135,7 +135,7 @@ def course_create_page():
                                 course_type=form.course_type.data,
                                 language=form.language.data,
                                 description=form.description.data,
-                                price=form.price.data,
+                                credit_count=form.credits.data,
                                 course_guarantor_id=current_user.id,
                                 users_limit=form.users_limit.data,
                                 confirmed=False)

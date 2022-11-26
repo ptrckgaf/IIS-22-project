@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, HiddenField, SelectField, widgets, BooleanField, IntegerField
 from wtforms.validators import Length, EqualTo, Email, DataRequired, ValidationError
-from iis_wis2.models import User, UserType, CourseType
+from iis_wis2.models import User, UserType, CourseType, CourseLanguage
 from sqlalchemy.orm import sessionmaker
 from iis_wis2 import engine
 
@@ -41,9 +41,10 @@ class CourseCreateForm(FlaskForm):
     name = StringField(label='Název:', validators=[Length(min=2, max=30), DataRequired()])
     course_type = SelectField(label='Typ kurzu:', validators=[DataRequired()],
                             choices=[course_type.name for course_type in CourseType])
-    language = StringField(label='Jazyk kurzu:', validators=[DataRequired()])
+    language = SelectField(label='Jazyk kurzu:', validators=[DataRequired()],
+                           choices=[language.name for language in CourseLanguage])
     description = StringField(label='Popis:', validators=[Length(min=0, max=1024), DataRequired()])
-    price = IntegerField(label='Cena kurzu:', validators=[DataRequired()])
+    credits = IntegerField(label='Počet kreditov:', validators=[DataRequired()])
     users_limit = IntegerField(label='Limit kurzu:', validators=[DataRequired()])
     submit = SubmitField(label='Odeslat žádost o registraci kurzu')
 
