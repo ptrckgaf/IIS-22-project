@@ -23,8 +23,8 @@ Přehled užívatelů
                 {% for user in users %}
                            <tr>
                                <td>{{ user.login }}</td>
-                               <td>{{ form.username(class="form-control", placeholder="User Name") }}</td>
-                               <td>{{ form.email_address(class="form-control", placeholder="Email Address") }}</td>
+                               <td>{{ user.username }}</td>
+                               <td>{{ user.email_address }}</td>
                           </tr>
 
                {% endfor %}
