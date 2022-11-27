@@ -247,22 +247,23 @@ def course_detail_page(course_name):
 @app.route('/users', methods=['GET', 'POST'])
 def users_page():
     Session = sessionmaker(engine)
-    courses_form = CoursesForm()
+    user_account_form = UserAccountForm()
     #users_form = UsersForm()
 
     if request.method == "POST":
-        with Session() as session:
-            db_user = session.query(User).filter_by(id=current_user.id).first()
-            users = session.query(User).all()
+        if user_account_form.validate_on_submit():
+            with Session() as session:
+                db_user = session.query(User).filter_by(id=current_user.id).first()
+                users = session.query(User).all()
 
-            return redirect(url_for('users_page'))
+                return redirect(url_for('users_page'))
 
     if request.method == "GET":
         with Session() as session:
             users = session.query(User).all()
             if current_user.is_authenticated:
                 db_user = session.query(User).filter_by(id=current_user.id).first()
-                return render_template('users.html', users=users, form=courses_form)
+                return render_template('users.html', users=users, form=user_account_form)
 
 
 
