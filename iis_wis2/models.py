@@ -116,7 +116,7 @@ class Course(Base, UserMixin):
     language = Column(Enum(CourseLanguage), nullable=False)
     credit_count = Column(Integer(), nullable=False)
     grade = Column(String(length=1), nullable=False)
-
+    price = Column(Integer(), nullable=False)
     news = Column(String(length=1024))
     confirmed = Column(Boolean(), nullable=False)
     users_limit = Column(Integer(), nullable=False)
