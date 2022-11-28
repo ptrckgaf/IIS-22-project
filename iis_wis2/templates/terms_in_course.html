@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}
+Termíny kurzu {{ course_name }}
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <br>
+    <h2>Termíny</h2>
+    <div class="container">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Název</th>
+                <th scope="col">Typ</th>
+                <th scope="col">Maximální počet bodů</th>
+                <th scope="col">Datum</th>
+                <th scope="col">Čas začátku</th>
+                <th scope="col">Čas konce</th>
+                <th scope="col">Název místnosti</th>
+                <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                 {{ form.hidden_tag() }}
+                 {% for term in terms_in_course %}
+                 <tr>
+                     <td>{{ term.name }}</td>
+                     <td>{{ term.type.name }}</td>
+                     <td>{{ term.maximum_points }}</td>
+                     <td>{{ term.date }}</td>
+                     <td>{{ term.start_time }}</td>
+                     <td>{{ term.end_time }}</td>
+                     <td>{{ term.room_name }}</td>
+                     <td><input name="deleted_term_id {{ term.id }}" id="{{ term.id }}" type="checkbox" value="{{ term.id }}"/></td>
+                 </tr>
+                {% endfor %}
+                 <td>{{ form.submit(class="btn btn-lg btn-block btn-primary") }}</td>
+             </form>
+         </tbody>
+      </table>
+    </div>
+</body>
+{% endblock %}

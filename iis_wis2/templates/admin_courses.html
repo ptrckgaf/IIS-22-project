@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Přehled kurzů
+{% endblock %}
+
+{% block content %}
+<div class="row" style="margin-top:20px; margin-left:20px">
+   <div class="col-11">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Název kurzu</th>
+                <th scope="col">Jazyk</th>
+                <th scope="col">Typ</th>
+                <th scope="col">Garant</th>
+                <th scope="col">Počet kreditů</th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                {% for course in courses %}
+                    {% if course.confirmed %}
+                       <tr>
+                           <td>{{ course.name }}</td>
+                           <td>{{ course.language.name }}</td>
+                           <td>{{ course.course_type.name }}</td>
+                           <td>{{ course.course_guarantor.login }}</td>
+                           <td>{{ course.credit_count }}</td>
+                           <td>
+                               <button type="button" class="btn btn-outline btn-info" onclick="window.location.href='{{ url_for('course_overview_page', course_name=course.name) }}'">Přehled</button>
+                               <button type="button" class="btn btn-outline btn-info" onclick="window.location.href='{{ url_for('student_course_administration_page', course_name=course.name) }}'">Spravovat studenty</button>
+                               <button type="button" class="btn btn-outline btn-info" onclick="window.location.href='{{ url_for('teacher_course_administration_page', course_name=course.name) }}'">Spravovat učitele</button>
+                               <button type="button" class="btn btn-outline btn-info" onclick="window.location.href='{{ url_for('term_create_page', course_name=course.name) }}'">Vytvořit termín</button>
+                               <button type="button" class="btn btn-outline btn-info" onclick="window.location.href='{{ url_for('terms_in_course_page', course_name=course.name) }}'">Spravovat termíny</button>
+                               <button type="button" class="btn btn-outline btn-info" onclick="window.location.href='{{ url_for('course_edit_page', course_name=course.name) }}'">Editovat kurz</button>
+                           </td>
+                      </tr>
+                    {% endif %}
+               {% endfor %}
+             </form>
+         </tbody>
+      </table>
+   </div>
+</div>
+{% endblock %}

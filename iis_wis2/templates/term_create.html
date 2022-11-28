@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}
+Vytvoření termínu v kurzu {{ course_name }}
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <div class="container">
+        <form method="POST" class="form-register" style="color:white">
+            {{ form.hidden_tag() }}
+            <br>
+            {{ form.name.label() }}
+            {{ form.name(class="form-control", placeholder="Název") }}
+            {{ form.type.label() }}
+            {{ form.type(class="form-control", placeholder="Typ") }}
+            {{ form.maximum_points.label() }}
+            {{ form.maximum_points(class="form-control", placeholder="Maximální počet bodů") }}
+            {{ form.date.label() }}
+            {{ form.date(class="form-control", placeholder="Datum") }}
+            {{ form.start_time.label() }}
+            {{ form.start_time(class="form-control", placeholder="Začátek") }}
+            {{ form.end_time.label() }}
+            {{ form.end_time(class="form-control", placeholder="Konec") }}
+            {{ form.room_name.label() }}
+            {{ form.room_name(class="form-control", placeholder="Konec") }}
+            <br>
+            {{ form.submit(class="btn btn-lg btn-block btn-primary") }}
+        </form>
+    </div>
+</body>
+{% endblock %}

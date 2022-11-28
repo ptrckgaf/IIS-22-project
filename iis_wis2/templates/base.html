@@ -26,7 +26,13 @@
 
                 {% if current_user.is_admin %}
                     <li class="nav-item active">
-                        <a class="nav-link" href="{{ url_for('register_page') }}">Vytvořit nového uživatele<span class="sr-only">(current)</span></a>
+                        <a class="nav-link" href="{{ url_for('user_create_page') }}">Vytvořit nového uživatele<span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{ url_for('room_create_page') }}">Vytvořit novou místnost<span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{ url_for('rooms_page') }}">Přehled místností<span class="sr-only">(current)</span></a>
                     </li>
                     <li class="nav-item active">
                         <a class="nav-link" href="{{ url_for('courses_to_confirm_page') }}">Kurzy ke schválení<span class="sr-only">(current)</span></a>
@@ -34,10 +40,13 @@
                     <li class="nav-item active">
                         <a class="nav-link" href="{{ url_for('users_page') }}">Přehled užívatelů<span class="sr-only">(current)</span></a>
                     </li>
-                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_courses_page') }}">Přehled kurzů</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('course_create_page') }}">Vytvořit nový kurz</a>
                     </li>
+                {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('courses_page') }}">Registrace kurzů</a>
                     </li>
@@ -46,6 +55,7 @@
                 {% if current_user.is_user %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('courses_page') }}">Přehled kurzů</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('courses_page') }}">Rozvrh</a>
                     </li>
