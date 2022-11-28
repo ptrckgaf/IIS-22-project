@@ -151,3 +151,11 @@ class TermCreateForm(FlaskForm):
                             choices=[room.name for room in rooms])
 
     submit = SubmitField(label='Vytvořit termín')
+
+
+class TermRegisterForm(FlaskForm):
+    submit = SubmitField(label='Registrovat vybrané termíny')
+
+
+class TermUnregisterForm(FlaskForm):
+    submit = SubmitField(label='Odregistrovat vybrané termíny')

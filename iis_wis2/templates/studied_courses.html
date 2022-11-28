@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Přehled kurzů
+{% endblock %}
+
+{% block content %}
+<div class="row" style="margin-top:20px; margin-left:20px">
+   <div class="col-11">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Název kurzu</th>
+                <th scope="col">Jazyk</th>
+                <th scope="col">Typ</th>
+                <th scope="col">Garant</th>
+                <th scope="col">Počet kreditů</th>
+                <th scope="col">Počet bodů</th>
+                <th scope="col">Hodnocení</th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                {% for course in courses %}
+                       <tr>
+                           <td>{{ course.name }}</td>
+                           <td>{{ course.language.name }}</td>
+                           <td>{{ course.type.name }}</td>
+                           <td>{{ course.guarantor_login }}</td>
+                           <td>{{ course.credit_count }}</td>
+                           <td>{{ course.obtained_points }}</td>
+                           <td>{{ course.grade }}</td>
+                           <td>
+                               <button type="button" class="btn btn-outline btn-info" onclick="window.location.href='{{ url_for('term_registration_page', course_name=course.name) }}'">Registrace termínů</button>
+                           </td>
+                      </tr>
+               {% endfor %}
+             </form>
+         </tbody>
+      </table>
+   </div>
+</div>
+{% endblock %}

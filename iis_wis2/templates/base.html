@@ -50,27 +50,19 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('courses_page') }}">Registrace kurzů</a>
                     </li>
-                {% endif %}
-
-                {% if current_user.is_user %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('courses_page') }}">Přehled kurzů</a>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('courses_page') }}">Rozvrh</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('terms_page') }}">Registrace termínů</a>
+                        <a class="nav-link" href="{{ url_for('studied_courses_page') }}">Studované kurzy</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_courses_page') }}">Vyučované kurzy</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_courses_page') }}">Garantované kurzy</a>
                     </li>
                 {% endif %}
-
-
-                {% if current_user.is_teacher %}
-                <!---TODO--->
-                {% endif %}
-
-
-
             {% else %}
             <li class="nav-item active">
                 <a class="nav-link" href="{{ url_for('home_page') }}">Přihlásit<span class="sr-only">(current)</span></a>

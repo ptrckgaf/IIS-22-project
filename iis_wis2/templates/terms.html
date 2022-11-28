@@ -25,26 +25,22 @@ Přehled termínů
              <form method="post">
                 {{ form.hidden_tag() }}
                 {% for term in terms %}
-                    {% include 'includes/term_modals.html' %}
-                    <tr>
-                        <td>{{ term.name }}</td>
-                        <td>{{ term.term_type.value }}</td>
-                        <td>{{ term.maximum_points }}</td>
-                        <td>{{ term.start_time }}</td>
-                        <td>{{ term.end_time }}</td>
-                        <td>{{ term.course_name }}</td>
-                        <td>{{ term.room_id }}</td>
+                 {% if term.name in users_have_registered_terms %}
+                        {% include 'includes/term_modals.html' %}
+                        <tr>
+                            <td>{{ term.name }}</td>
+                            <td>{{ term.type.value }}</td>
+                            <td>{{ term.maximum_points }}</td>
+                            <td>{{ term.start_time }}</td>
+                            <td>{{ term.end_time }}</td>
+                            <td>{{ term.course_name }}</td>
+                            <td>{{ term.room_id }}</td>
 
-                    {% if current_user.is_authenticated %}
-                        <td>
-                            {% if term.name in users_have_registered_terms %}
-                                <input name="registered_term_name {{ term.name }}" id="{{ term.name }}" type="checkbox" checked="checked" value="{{ term.name }}"/>
-                            {% else %}
-                                <input name="registered_term_name {{ term.name }}" id="{{ term.name }}" type="checkbox" value="{{ term.name }}"/>
-                            {% endif %}
-                        </td>
-                    {% endif %}
-                    </tr>
+                        {% if current_user.is_authenticated %}
+                            <td> <input name="registered_term_name {{ term.name }}" id="{{ term.name }}" type="checkbox" value="{{ term.name }}"/></td>
+                        {% endif %}
+                        </tr>
+                 {% endif %}
                {% endfor %}
                 {% if current_user.is_authenticated %}
                    <td> {{ form.submit(class="btn btn-lg btn-block btn-primary") }} </td>

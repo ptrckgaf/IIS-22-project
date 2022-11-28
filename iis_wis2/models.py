@@ -65,7 +65,7 @@ class UsersHaveRegisteredCourses(Base):
     user_id = Column(ForeignKey("user.id"), primary_key=True)
     course_name = Column(ForeignKey("course.name"),  primary_key=True)
     registration_confirmed = Column(Boolean(), nullable=False, default=False)
-    grade = Column(String(length=1), nullable=False)
+    grade = Column(String(length=1), nullable=False, default="F")
     user = relationship('User', viewonly=True)
 
 

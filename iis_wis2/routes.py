@@ -4,7 +4,8 @@ from iis_wis2.models import User, Course, UserType, UsersHaveRegisteredCourses, 
 from iis_wis2.forms import RegisterForm, LoginForm, CoursesForm, MyCoursesForm, UserAccountForm, CourseCreateForm, \
     CoursesToConfirmForm, CourseEditForm, CourseRegistrationForm, TermsForm, UsersForm, RoomCreateForm, RoomsForm, \
     RoomEditForm, DeletingUserFromCourseForm, CourseTeacherRegistrationForm, DeletingTeacherFromCourseForm, \
-    TermCreateForm, TermsInCourseForm, StudentsInTermForm, StudentsEvaluationInTermForm
+    TermCreateForm, TermsInCourseForm, StudentsInTermForm, StudentsEvaluationInTermForm, \
+    TermRegisterForm, TermUnregisterForm
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.orm import sessionmaker
 from datetime import date
@@ -498,15 +499,12 @@ def terms_in_course_page(course_name):
                                    course_name=course_name)
 
 
-
-
-
-
-class StudentCourseOverview():
+class StudentCourseOverview:
     def __init__(self, login, email_address, obtained_points):
         self.login = login
         self.email_address = email_address
         self.obtained_points = obtained_points
+
 
 @app.route('/course_overview_page/<course_name>', methods=['GET', 'POST'])
 def course_overview_page(course_name):
@@ -529,20 +527,6 @@ def course_overview_page(course_name):
 
         return render_template('course_overview.html', students=students_obtained_points,
                                teachers=course.teachers_in_course)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 @app.route('/course_edit_page/<course_name>', methods=['GET', 'POST'])
@@ -579,64 +563,10 @@ def course_edit_page(course_name):
 
         return render_template('course_edit.html', courses_edit_form=courses_edit_form, course_name=course.name)
 
+
 @app.route('/course_detail_page/<course_name>', methods=['GET', 'POST'])
 def course_detail_page(course_name):
     return "Not working"
-#     courses_detail_form = CoursesDetailsForm()
-#     course_registration_form = CourseRegistrationForm()
-#     Session = sessionmaker(engine)
-#
-#     if request.method == "POST":
-#         with Session() as session:
-#             if course_registration_form.validate_on_submit():
-#
-#                 confirmed_users_logins = [value for elem, value in request.form.items()
-#                                           if elem.startswith('confirmed_student_login')]
-#
-#                 db_users_course = session.query(UsersHaveRegisteredCourses).\
-#                     filter_by(course_name=course_name).all()
-#
-#                 for user_in_course in db_users_course:
-#                     if user_in_course.user.login in confirmed_users_logins:
-#                         user_in_course.registration_confirmed = True
-#
-#                 session.commit()
-#
-#             if courses_detail_form.validate_on_submit():
-#                 course = session.query(Course).filter_by(name=course_name).first()
-#                 course.name = courses_detail_form.name.data
-#                 course.course_type = courses_detail_form.course_type.data
-#                 course.description = courses_detail_form.description.data
-#                 course.price = courses_detail_form.price.data
-#                 course.users_limit = courses_detail_form.users_limit.data
-#                 session.commit()
-#                 flash(f"Kurz {course.name} úspěšně editován!", category='success')
-#
-#                 if courses_detail_form.errors != {}: #If there are errors from the validations
-#                     for err_msg in courses_detail_form.errors.values():
-#                         flash(f'Chyba při eidtaci kurzu: {err_msg}', category='danger')
-#
-#             return redirect(url_for('course_detail_page', course_name=course_name))
-#
-#     if request.method == "GET":
-#         with Session() as session:
-#             course = session.query(Course).filter_by(name=course_name).first()
-#             courses_detail_form.name.data = course_name
-#             courses_detail_form.course_type.data = course.course_type
-#             courses_detail_form.description.data = course.description
-#             courses_detail_form.price.data = course.price
-#             courses_detail_form.users_limit.data = course.users_limit
-#
-#             unconfirmed_student_in_course = session.query(UsersHaveRegisteredCourses).\
-#                 filter_by(course_name=course_name).\
-#                 filter_by(registration_confirmed=False).all()
-#
-#             unconfirmed_students_logins = [unconfirmed_student.user.login for unconfirmed_student
-#                                            in unconfirmed_student_in_course]
-#
-#         return render_template('course_detail.html', courses_detail_form=courses_detail_form, course_name=course.name,
-#                                course_registration_form=course_registration_form,
-#                                unconfirmed_students_logins=unconfirmed_students_logins)
 
 
 @app.route('/users', methods=['GET', 'POST'])
@@ -719,6 +649,129 @@ def logout_page():
     logout_user()
     flash("Odhlášení proběhlo úspěšně!", category='info')
     return redirect(url_for("home_page"))
+
+
+class StudiedCourseOverview:
+    def __init__(self, name, language, type, guarantor_login, credit_count, obtained_points, grade):
+        self.name = name
+        self.language = language
+        self.type = type
+        self.guarantor_login = guarantor_login
+        self.credit_count = credit_count
+        self.obtained_points = obtained_points
+        self.grade = grade
+
+
+def get_grade_by_optainded_points(obtained_points):
+    if obtained_points < 50:
+        return "F"
+    elif 50 <= obtained_points <= 59:
+        return "E"
+    elif 60 <= obtained_points <= 69:
+        return "D"
+    elif 70 <= obtained_points <= 79:
+        return "C"
+    elif 80 <= obtained_points <= 89:
+        return "B"
+    else:
+        return "A"
+
+
+@app.route('/studied_courses_page', methods=['GET', 'POST'])
+def studied_courses_page():
+    Session = sessionmaker(engine)
+    with Session() as session:
+        courses_overviews = []
+        db_user = session.query(User).filter_by(id=current_user.id).first()
+
+        for course in db_user.registered_courses:
+            studied_course_overview = StudiedCourseOverview(course.name, course.language, course.course_type,
+                                                            course.course_guarantor.login, course.credit_count,
+                                                            0, "F")
+
+            for term in course.terms:
+                student_with_obtained_points = session.query(UsersHaveRegisteredTerms) \
+                    .filter_by(term_id=term.id) \
+                    .filter_by(user_id=current_user.id) \
+                    .first()
+
+                if student_with_obtained_points:
+                    studied_course_overview.obtained_points += student_with_obtained_points.obtained_points
+
+            courses_overviews.append(studied_course_overview)
+
+        #grade update
+        for course_overview in courses_overviews:
+            course_overview.grade = get_grade_by_optainded_points(course_overview.obtained_points)
+
+        return render_template('studied_courses.html', courses=courses_overviews)
+
+
+class RegisteredTermOverview:
+    def __init__(self, term, obtained_points):
+        self.term = term
+        self.obtained_points = obtained_points
+
+
+@app.route('/term_registration_page/<course_name>', methods=['GET', 'POST'])
+def term_registration_page(course_name):
+    term_register_form = TermRegisterForm()
+    term_unregister_form = TermUnregisterForm()
+    Session = sessionmaker(engine)
+
+    if request.method == "POST":
+        if term_register_form.validate_on_submit():
+            with Session() as session:
+                ids_of_terms_to_register = [value for elem, value in request.form.items()
+                                               if elem.startswith('registered_term_id')]
+                user_db = session.query(User).filter_by(id=current_user.id).first()
+                user_db.registered_terms.clear()
+
+                for term_id in ids_of_terms_to_register:
+                    registered_term = session.query(Term).filter_by(id=term_id).first()
+                    user_db.registered_terms.append(registered_term)
+
+                session.commit()
+                return redirect(url_for('term_registration_page', course_name=course_name))
+
+        if term_unregister_form.validate_on_submit():
+            with Session() as session:
+                ids_of_terms_to_register = [value for elem, value in request.form.items()
+                                               if elem.startswith('unregistered_term_id')]
+                user_db = session.query(User).filter_by(id=current_user.id).first()
+
+                for term_id in ids_of_terms_to_register:
+                    registered_term = session.query(Term).filter_by(id=term_id).first()
+                    user_db.registered_terms.remove(registered_term)
+
+                session.commit()
+                return redirect(url_for('term_registration_page', course_name=course_name))
+
+    if request.method == "GET":
+        registered_terms_overviews = []
+
+        with Session() as session:
+            course = session.query(Course).filter_by(name=course_name).first()
+            db_user = session.query(User).filter_by(id=current_user.id).first()
+
+            for registered_term in db_user.registered_terms:
+                registered_term_info = session.query(UsersHaveRegisteredTerms)\
+                    .filter_by(user_id=current_user.id)\
+                    .filter_by(term_id=registered_term.id)\
+                    .first()
+                registered_term_overview = RegisteredTermOverview(registered_term, registered_term_info.obtained_points)
+                registered_terms_overviews.append(registered_term_overview)
+
+            non_registered_terms = []
+
+            for course_term in course.terms:
+                if not course_term in db_user.registered_terms:
+                    non_registered_terms.append(course_term)
+
+
+            return render_template('term_registration.html', term_register_form=term_register_form,
+                               term_unregister_form=term_unregister_form, terms=non_registered_terms,
+                                   registered_terms_overviews=registered_terms_overviews)
 
 
 @app.route('/terms', methods=['GET', 'POST'])
