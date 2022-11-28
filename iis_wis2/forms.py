@@ -68,6 +68,9 @@ class CoursesForm(FlaskForm):
     submit = SubmitField(label='Odeslat žádost o registraci na vybrané kurzy')
 
 
+class TermsForm(FlaskForm):
+    submit = SubmitField(label='Registrovat')
+
 class CoursesDetailsForm(FlaskForm):
     name = StringField(label='Název:', validators=[Length(min=2, max=30), DataRequired()])
     course_language = StringField(label='Jazyk:', validators=[DataRequired()])
