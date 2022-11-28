@@ -1,8 +1,8 @@
 from iis_wis2 import app, engine
 from flask import render_template, redirect, url_for, flash, request
-from iis_wis2.models import User, Course, UserType, UsersHaveRegisteredCourses
+from iis_wis2.models import User, Course, UserType, UsersHaveRegisteredCourses, Term
 from iis_wis2.forms import RegisterForm, LoginForm, CoursesForm, MyCoursesForm, UserAccountForm, CourseCreateForm, \
-    CoursesToConfirmForm, CoursesDetailsForm, CourseRegistrationForm
+    CoursesToConfirmForm, CoursesDetailsForm, CourseRegistrationForm, TermsForm
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.orm import sessionmaker
 
@@ -274,6 +274,33 @@ def logout_page():
     return redirect(url_for("home_page"))
 
 
-# @app.route('/student_home', methods=['GET', 'POST'])
-# def student_home_page():
-#
+@app.route('/terms', methods=['GET', 'POST'])
+def terms_page():
+    Session = sessionmaker(engine)
+    terms_form = TermsForm()
+
+    if request.method == "POST":
+        with Session() as session:
+            db_user = session.query(User).filter_by(id=current_user.id).first()
+            terms = session.query(Term).all()
+            db_user.registered_terms.clear()
+            registered_terms = [value for elem, value in request.form.items()
+                                  if elem.startswith('registered_term_name')]
+
+            for term in terms:
+                if term.name in registered_terms:
+                    db_user.registered_terms.append(term)
+
+            session.commit()
+            return redirect(url_for('terms_page'))
+
+    if request.method == "GET":
+        with Session() as session:
+            terms = session.query(Term).all()
+            if current_user.is_authenticated:
+                db_user = session.query(User).filter_by(id=current_user.id).first()
+                registered_terms_names = [term.name for term in db_user.registered_terms]
+                return render_template('terms.html', terms=terms, form=terms_form,
+                                       registered_terms_names=registered_terms_names)
+            else:
+                return render_template('terms.html', terms=terms, form=terms_form)

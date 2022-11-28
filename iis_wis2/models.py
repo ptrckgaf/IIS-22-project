@@ -18,9 +18,9 @@ class CourseType(enum.Enum):
 
 
 class TermType(enum.Enum):
-    term_type1 = 1
-    term_type2 = 2
-    term_type3 = 3
+    lecture = 'prednaska'
+    exercise = 'cviceni'
+    exam = 'test'
 
 class CourseLanguage(enum.Enum):
     czech = 'cz'
@@ -121,8 +121,8 @@ class Course(Base, UserMixin):
     confirmed = Column(Boolean(), nullable=False)
     users_limit = Column(Integer(), nullable=False)
     day_of_the_week = Column(Enum(DaysOfTheWeek), nullable=False)
-    start_time = Column(Time(), nullable=False)
-    end_time = Column(Time(), nullable=False)
+    start_time = Column(Time(), nullable=True)
+    end_time = Column(Time(), nullable=True)
     room_id = Column(Integer(), ForeignKey('room.id'), nullable=False)
     course_guarantor_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
     users_in_course = relationship(
@@ -139,8 +139,8 @@ class Term(Base, UserMixin):
     term_type = Column(Enum(TermType), nullable=False)
     maximum_points = Column(Integer(), nullable=False)
     description = Column(String(length=1024))
-    start_time = Column(DateTime(), nullable=False)
-    end_time = Column(DateTime(), nullable=False)
+    start_time = Column(DateTime(), nullable=True)
+    end_time = Column(DateTime(), nullable=True)
     course_name = Column(String(length=30), ForeignKey('course.name'), nullable=True)
     room_id = Column(Integer(), ForeignKey('room.id'), nullable=True)
     users_in_term = relationship(
