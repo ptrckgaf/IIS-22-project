@@ -1,10 +1,13 @@
 from iis_wis2 import app, engine
 from flask import render_template, redirect, url_for, flash, request
-from iis_wis2.models import User, Course, UserType, UsersHaveRegisteredCourses, Term
+from iis_wis2.models import User, Course, UserType, UsersHaveRegisteredCourses, Term, Room
 from iis_wis2.forms import RegisterForm, LoginForm, CoursesForm, MyCoursesForm, UserAccountForm, CourseCreateForm, \
-    CoursesToConfirmForm, CoursesDetailsForm, CourseRegistrationForm, TermsForm
+    CoursesToConfirmForm, CourseEditForm, CourseRegistrationForm, TermsForm, UsersForm, RoomCreateForm, RoomsForm, \
+    RoomEditForm, DeletingUserFromCourseForm, CourseTeacherRegistrationForm, DeletingTeacherFromCourseForm, \
+    TermCreateForm, TermsInCourseForm
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.orm import sessionmaker
+from datetime import date
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -24,14 +27,14 @@ def home_page():
                 attempted_password=form.password.data
         ):
             login_user(attempted_user)
-            flash(f'Success! You are logged in as: {attempted_user.login}', category='success')
+            flash(f'Přihlášení proběhlo úspěšně. Jste přihlášen jako: {attempted_user.login}', category='success')
 
             if attempted_user.user_type != UserType.administrator:
                 return redirect(url_for('courses_page'))
 
-            return redirect(url_for('register_page'))
+            return redirect(url_for('user_create_page'))
         else:
-            flash('Username and password are not match! Please try again', category='danger')
+            flash('Špatně zadaný login nebo heslo.', category='danger')
 
     return render_template('login.html', form=form)
 
@@ -92,6 +95,14 @@ def courses_page():
                 return render_template('courses.html', courses=courses, form=courses_form)
 
 
+@app.route('/admin_courses', methods=['GET', 'POST'])
+def admin_courses_page():
+    Session = sessionmaker(engine)
+    with Session() as session:
+        courses = session.query(Course).all()
+        return render_template('admin_courses.html', courses=courses)
+
+
 @app.route('/user_account_page', methods=['GET', 'POST'])
 def user_account_page():
     Session = sessionmaker(engine)
@@ -101,18 +112,20 @@ def user_account_page():
         if user_account_form.validate_on_submit():
             with Session() as session:
                 db_user = session.query(User).filter_by(id=current_user.id).first()
+                new_email_address = user_account_form.email_address.data
+                old_email_address = db_user.email_address
 
                 # ve formuláři byla zadána nová adresa
-                if current_user.email_address != user_account_form.email_address.data:
-                    db_email_address = session.query(User).\
-                        filter_by(email_address=user_account_form.email_address.data).first()
+                if old_email_address != new_email_address:
+                    db_user_with_new_email_address = session.query(User).filter_by(
+                        email_address=new_email_address).first()
 
-                    if db_email_address:
-                        # emailová adresa již exituje
-                        flash(f'Emailová adresa již existuje: {db_email_address}', category='danger')
+                    if db_user_with_new_email_address:
+                        # již existuje uživatel s emailovou adresou
+                        flash(f'Emailová adresa již existuje: {new_email_address}', category='danger')
                     else:
                         # emailová adresa neexistuje a můžeme ji tedy aktualizovat
-                        db_user.email_address = user_account_form.email_address.data
+                        db_user.email_address = new_email_address
 
                 db_user.username = user_account_form.username.data
                 session.commit()
@@ -124,6 +137,25 @@ def user_account_page():
             user_account_form.username.data = db_user.username
             user_account_form.email_address.data = db_user.email_address
             return render_template('user_account.html', form=user_account_form)
+
+
+@app.route('/room_create_page', methods=['GET', 'POST'])
+def room_create_page():
+    Session = sessionmaker(engine)
+    room_create_form = RoomCreateForm()
+
+    if request.method == "POST":
+        if room_create_form.validate_on_submit():
+            with Session() as session:
+                room_to_create = Room(name=room_create_form.name.data,
+                                      capacity=room_create_form.capacity.data)
+                session.add(room_to_create)
+                session.commit()
+                flash(f"Nová místnost {room_to_create.name} úspěšně vytvořena!", category='success')
+        return redirect(url_for('room_create_page'))
+
+    if request.method == "GET":
+        return render_template('room_create.html', form=room_create_form)
 
 @app.route('/course_create_page', methods=['GET', 'POST'])
 def course_create_page():
@@ -150,8 +182,8 @@ def course_create_page():
     return render_template('course_create.html', form=form)
 
 
-@app.route('/register', methods=['GET', 'POST'])
-def register_page():
+@app.route('/user_create', methods=['GET', 'POST'])
+def user_create_page():
 
     if current_user and current_user.user_type != UserType.administrator:
         return
@@ -167,12 +199,12 @@ def register_page():
                                 password=form.password1.data)
             session.add(user_to_create)
             session.commit()
-            flash(f"User {user_to_create.username} created successfully!", category='success')
-        return redirect(url_for('register_page'))
+            flash(f"Uživatel {user_to_create.username} úspěšně vytvořen!", category='success')
+        return redirect(url_for('user_create_page'))
     if form.errors != {}: #If there are not errors from the validations
         for err_msg in form.errors.values():
-            flash(f'There was an error with creating a user: {err_msg}', category='danger')
-    return render_template('register.html', form=form)
+            flash(f'Chyba během vytváření uživatele: {err_msg}', category='danger')
+    return render_template('user_create.html', form=form)
 
 
 @app.route('/guaranteed_courses_page', methods=['GET', 'POST'])
@@ -185,20 +217,59 @@ def guaranteed_courses_page():
             return render_template('guaranteed_courses.html', courses=courses)
 
 
-@app.route('/course_detail_page/<course_name>', methods=['GET', 'POST'])
-def course_detail_page(course_name):
-    courses_detail_form = CoursesDetailsForm()
+@app.route('/user_detail_page/<user_login>', methods=['GET', 'POST'])
+def user_detail_page(user_login):
+    user_account_form = UserAccountForm()
+    Session = sessionmaker(engine)
+
+    if request.method == "POST":
+        if user_account_form.validate_on_submit():
+            with Session() as session:
+                db_user = session.query(User).filter_by(login=user_login).first()
+                new_email_address = user_account_form.email_address.data
+                old_email_address = db_user.email_address
+
+                # ve formuláři byla zadána nová adresa
+                if old_email_address != new_email_address:
+                    db_user_with_new_email_address = session.query(User).filter_by(
+                        email_address=new_email_address).first()
+
+                    if db_user_with_new_email_address:
+                        # již existuje uživatel s emailovou adresou
+                        flash(f'Emailová adresa již existuje: {new_email_address}', category='danger')
+                    else:
+                        # emailová adresa neexistuje a můžeme ji tedy aktualizovat
+                        db_user.email_address = new_email_address
+
+                db_user.username = user_account_form.username.data
+                session.commit()
+                flash(f"Editace úspěšně provedena!", category='success')
+                return redirect(url_for('user_detail_page', user_login=user_login))
+
+    if user_account_form.errors != {}: #If there are not errors from the validations
+        for err_msg in user_account_form.errors.values():
+            flash(f'Chyba během editace uživatele: {err_msg}', category='danger')
+
+    if request.method == "GET":
+        with Session() as session:
+            db_user = session.query(User).filter_by(login=user_login).first()
+            user_account_form.username.data = db_user.username
+            user_account_form.email_address.data = db_user.email_address
+            return render_template('user_account.html', form=user_account_form)
+
+@app.route('/student_course_administration_page/<course_name>', methods=['GET', 'POST'])
+def student_course_administration_page(course_name):
     course_registration_form = CourseRegistrationForm()
+    deleting_user_from_course_form_form = DeletingUserFromCourseForm()
     Session = sessionmaker(engine)
 
     if request.method == "POST":
         with Session() as session:
             if course_registration_form.validate_on_submit():
-
                 confirmed_users_logins = [value for elem, value in request.form.items()
                                           if elem.startswith('confirmed_student_login')]
 
-                db_users_course = session.query(UsersHaveRegisteredCourses).\
+                db_users_course = session.query(UsersHaveRegisteredCourses). \
                     filter_by(course_name=course_name).all()
 
                 for user_in_course in db_users_course:
@@ -207,70 +278,335 @@ def course_detail_page(course_name):
 
                 session.commit()
 
-            if courses_detail_form.validate_on_submit():
+            if deleting_user_from_course_form_form.validate_on_submit():
+                deleted_user_logins = [value for elem, value in request.form.items()
+                                          if elem.startswith('deleted_user_login')]
+
                 course = session.query(Course).filter_by(name=course_name).first()
-                course.name = courses_detail_form.name.data
-                course.course_type = courses_detail_form.course_type.data
-                course.description = courses_detail_form.description.data
-                course.price = courses_detail_form.price.data
-                course.users_limit = courses_detail_form.users_limit.data
+
+                for student in course.users_in_course:
+                    if student.login in deleted_user_logins:
+                        course.users_in_course.remove(student)
+
                 session.commit()
-                flash(f"Kurz {course.name} úspěšně editován!", category='success')
 
-                if courses_detail_form.errors != {}: #If there are errors from the validations
-                    for err_msg in courses_detail_form.errors.values():
-                        flash(f'Chyba při eidtaci kurzu: {err_msg}', category='danger')
-
-            return redirect(url_for('course_detail_page', course_name=course_name))
+            return redirect(url_for('student_course_administration_page', course_name=course_name))
 
     if request.method == "GET":
         with Session() as session:
             course = session.query(Course).filter_by(name=course_name).first()
-            courses_detail_form.name.data = course_name
-            courses_detail_form.course_type.data = course.course_type
-            courses_detail_form.description.data = course.description
-            courses_detail_form.price.data = course.price
-            courses_detail_form.users_limit.data = course.users_limit
 
-            unconfirmed_student_in_course = session.query(UsersHaveRegisteredCourses).\
-                filter_by(course_name=course_name).\
+            confirmed_students_in_course = session.query(UsersHaveRegisteredCourses). \
+                filter_by(course_name=course_name). \
+                filter_by(registration_confirmed=True).all()
+
+            confirmed_students_logins = [confirmed_student.user.login for confirmed_student
+                                           in confirmed_students_in_course]
+
+            unconfirmed_students_in_course = session.query(UsersHaveRegisteredCourses). \
+                filter_by(course_name=course_name). \
                 filter_by(registration_confirmed=False).all()
 
             unconfirmed_students_logins = [unconfirmed_student.user.login for unconfirmed_student
-                                           in unconfirmed_student_in_course]
+                                           in unconfirmed_students_in_course]
 
-        return render_template('course_detail.html', courses_detail_form=courses_detail_form, course_name=course.name,
-                               course_registration_form=course_registration_form,
-                               unconfirmed_students_logins=unconfirmed_students_logins)
+            return render_template('student_course_administration.html',
+                                   course_name=course.name,
+                                   course_registration_form=course_registration_form,
+                                   unconfirmed_students_logins=unconfirmed_students_logins,
+                                   confirmed_students_logins=confirmed_students_logins,
+                                   deleting_user_from_course_form_form=deleting_user_from_course_form_form)
+
+
+@app.route('/teacher_course_administration_page/<course_name>', methods=['GET', 'POST'])
+def teacher_course_administration_page(course_name):
+    course_teacher_registration_form = CourseTeacherRegistrationForm()
+    deleting_teacher_from_course_form = DeletingTeacherFromCourseForm()
+    Session = sessionmaker(engine)
+
+    if request.method == "POST":
+        with Session() as session:
+            if course_teacher_registration_form.validate_on_submit():
+                added_teachers_logins = [value for elem, value in request.form.items()
+                                          if elem.startswith('added_teacher_login')]
+
+                course = session.query(Course).filter_by(name=course_name).first()
+
+                for login in added_teachers_logins:
+                    added_teacher = session.query(User).filter_by(login=login).first()
+                    course.teachers_in_course.append(added_teacher)
+
+                session.commit()
+
+            if deleting_teacher_from_course_form.validate_on_submit():
+                deleted_teacher_logins = [value for elem, value in request.form.items()
+                                          if elem.startswith('deleted_teacher_login')]
+
+                course = session.query(Course).filter_by(name=course_name).first()
+
+                for teacher in course.teachers_in_course:
+                    if teacher.login in deleted_teacher_logins:
+                        course.teachers_in_course.remove(teacher)
+
+                session.commit()
+
+            return redirect(url_for('teacher_course_administration_page', course_name=course_name))
+
+    if request.method == "GET":
+        with Session() as session:
+            course = session.query(Course).filter_by(name=course_name).first()
+            users = session.query(User).all()
+
+            teachers_logins_in_course = [teacher.login for teacher in course.teachers_in_course]
+            teachers_not_in_course = []
+            for user in users:
+                if user.login not in teachers_logins_in_course:
+                    teachers_not_in_course.append(user)
+
+            return render_template('teacher_course_administration.html',
+                                   course_name=course.name,
+                                   teachers_in_course=course.teachers_in_course,
+                                   teachers_not_in_course=teachers_not_in_course,
+                                   course_teacher_registration_form=course_teacher_registration_form,
+                                   deleting_teacher_from_course_form=deleting_teacher_from_course_form)
+
+
+@app.route('/term_create_page/<course_name>', methods=['GET', 'POST'])
+def term_create_page(course_name):
+    form = TermCreateForm()
+    Session = sessionmaker(engine)
+
+    if request.method == "POST":
+        if form.validate_on_submit():
+            with Session() as session:
+                term_to_create = Term(name=form.name.data,
+                                      type=form.type.data,
+                                      maximum_points=form.maximum_points.data,
+                                      date=form.date.data,
+                                      start_time=form.start_time.data,
+                                      end_time=form.end_time.data,
+                                      course_name=course_name,
+                                      room_name=form.room_name.data)
+                session.add(term_to_create)
+                session.commit()
+                flash(f"Termín {term_to_create.name} úspěšně vytvořen!", category='success')
+
+            return redirect(url_for('term_create_page', course_name=course_name))
+
+        if form.errors != {}:  # If there are errors from the validations
+            for err_msg in form.errors.values():
+                flash(f'Chyba při vytváření termínu: {err_msg}', category='danger')
+
+    if request.method == "GET":
+        return render_template('term_create.html', form=form, course_name=course_name)
+
+
+@app.route('/terms_in_course_page/<course_name>', methods=['GET', 'POST'])
+def terms_in_course_page(course_name):
+    form = TermsInCourseForm()
+    Session = sessionmaker(engine)
+
+    if request.method == "POST":
+        if form.validate_on_submit():
+            with Session() as session:
+                deleted_terms_ids = [value for elem, value in request.form.items()
+                                          if elem.startswith('deleted_term_id')]
+
+                course = session.query(Course).filter_by(name=course_name).first()
+
+                for term in course.terms:
+                    if str(term.id) in deleted_terms_ids:
+                        course.terms.remove(term)
+
+                session.commit()
+
+            return redirect(url_for('terms_in_course_page', course_name=course_name))
+
+    if request.method == "GET":
+        with Session() as session:
+            course = session.query(Course).filter_by(name=course_name).first()
+            return render_template('terms_in_course.html', form=form, terms_in_course=course.terms,
+                                   course_name=course_name)
+
+
+@app.route('/course_overview_page/<course_name>', methods=['GET', 'POST'])
+def course_overview_page(course_name):
+    return render_template('course_overview.html', students=[], teachers=[])
+
+
+@app.route('/course_edit_page/<course_name>', methods=['GET', 'POST'])
+def course_edit_page(course_name):
+    courses_edit_form = CourseEditForm()
+    Session = sessionmaker(engine)
+
+    if request.method == "POST":
+        with Session() as session:
+            if courses_edit_form.validate_on_submit():
+                course = session.query(Course).filter_by(name=course_name).first()
+                course.name = courses_edit_form.name.data
+                course.course_type = courses_edit_form.course_type.data
+                course.description = courses_edit_form.description.data
+                course.price = courses_edit_form.price.data
+                course.users_limit = courses_edit_form.users_limit.data
+                session.commit()
+                flash(f"Kurz {course.name} úspěšně editován!", category='success')
+
+                if courses_edit_form.errors != {}: #If there are errors from the validations
+                    for err_msg in courses_edit_form.errors.values():
+                        flash(f'Chyba při eidtaci kurzu: {err_msg}', category='danger')
+
+            return redirect(url_for('course_edit_page', course_name=course_name))
+
+    if request.method == "GET":
+        with Session() as session:
+            course = session.query(Course).filter_by(name=course_name).first()
+            courses_edit_form.name.data = course_name
+            courses_edit_form.course_type.data = course.course_type
+            courses_edit_form.description.data = course.description
+            courses_edit_form.price.data = course.price
+            courses_edit_form.users_limit.data = course.users_limit
+
+        return render_template('course_edit.html', courses_edit_form=courses_edit_form, course_name=course.name)
+
+@app.route('/course_detail_page/<course_name>', methods=['GET', 'POST'])
+def course_detail_page(course_name):
+    return "Not working"
+#     courses_detail_form = CoursesDetailsForm()
+#     course_registration_form = CourseRegistrationForm()
+#     Session = sessionmaker(engine)
+#
+#     if request.method == "POST":
+#         with Session() as session:
+#             if course_registration_form.validate_on_submit():
+#
+#                 confirmed_users_logins = [value for elem, value in request.form.items()
+#                                           if elem.startswith('confirmed_student_login')]
+#
+#                 db_users_course = session.query(UsersHaveRegisteredCourses).\
+#                     filter_by(course_name=course_name).all()
+#
+#                 for user_in_course in db_users_course:
+#                     if user_in_course.user.login in confirmed_users_logins:
+#                         user_in_course.registration_confirmed = True
+#
+#                 session.commit()
+#
+#             if courses_detail_form.validate_on_submit():
+#                 course = session.query(Course).filter_by(name=course_name).first()
+#                 course.name = courses_detail_form.name.data
+#                 course.course_type = courses_detail_form.course_type.data
+#                 course.description = courses_detail_form.description.data
+#                 course.price = courses_detail_form.price.data
+#                 course.users_limit = courses_detail_form.users_limit.data
+#                 session.commit()
+#                 flash(f"Kurz {course.name} úspěšně editován!", category='success')
+#
+#                 if courses_detail_form.errors != {}: #If there are errors from the validations
+#                     for err_msg in courses_detail_form.errors.values():
+#                         flash(f'Chyba při eidtaci kurzu: {err_msg}', category='danger')
+#
+#             return redirect(url_for('course_detail_page', course_name=course_name))
+#
+#     if request.method == "GET":
+#         with Session() as session:
+#             course = session.query(Course).filter_by(name=course_name).first()
+#             courses_detail_form.name.data = course_name
+#             courses_detail_form.course_type.data = course.course_type
+#             courses_detail_form.description.data = course.description
+#             courses_detail_form.price.data = course.price
+#             courses_detail_form.users_limit.data = course.users_limit
+#
+#             unconfirmed_student_in_course = session.query(UsersHaveRegisteredCourses).\
+#                 filter_by(course_name=course_name).\
+#                 filter_by(registration_confirmed=False).all()
+#
+#             unconfirmed_students_logins = [unconfirmed_student.user.login for unconfirmed_student
+#                                            in unconfirmed_student_in_course]
+#
+#         return render_template('course_detail.html', courses_detail_form=courses_detail_form, course_name=course.name,
+#                                course_registration_form=course_registration_form,
+#                                unconfirmed_students_logins=unconfirmed_students_logins)
 
 
 @app.route('/users', methods=['GET', 'POST'])
 def users_page():
     Session = sessionmaker(engine)
-    user_account_form = UserAccountForm()
-    #users_form = UsersForm()
+    users_form = UsersForm()
 
     if request.method == "POST":
-        if user_account_form.validate_on_submit():
+        if users_form.validate_on_submit():
             with Session() as session:
-                db_user = session.query(User).filter_by(id=current_user.id).first()
-                users = session.query(User).all()
+                logins_of_users_to_delete = [value for elem, value in request.form.items()
+                                               if elem.startswith('deleted_user_name')]
 
+                for login in logins_of_users_to_delete:
+                    deleted_user = session.query(User).filter_by(login=login).first()
+                    session.delete(deleted_user)
+
+                session.commit()
                 return redirect(url_for('users_page'))
 
     if request.method == "GET":
         with Session() as session:
             users = session.query(User).all()
             if current_user.is_authenticated:
-                db_user = session.query(User).filter_by(id=current_user.id).first()
-                return render_template('users.html', users=users, form=user_account_form)
+                return render_template('users.html', users=users, form=users_form)
 
+
+@app.route('/rooms', methods=['GET', 'POST'])
+def rooms_page():
+    Session = sessionmaker(engine)
+    rooms_form = RoomsForm()
+
+    if request.method == "POST":
+        if rooms_form.validate_on_submit():
+            with Session() as session:
+                names_of_rooms_to_delete = [value for elem, value in request.form.items()
+                                               if elem.startswith('deleted_room_name')]
+
+                for name in names_of_rooms_to_delete:
+                    deleted_room = session.query(Room).filter_by(name=name).first()
+                    session.delete(deleted_room)
+
+                session.commit()
+                return redirect(url_for('rooms_page'))
+
+    if request.method == "GET":
+        with Session() as session:
+            rooms = session.query(Room).all()
+            if current_user.is_authenticated:
+                return render_template('rooms.html', rooms=rooms, form=rooms_form)
+
+
+@app.route('/room_detail_page/<room_name>', methods=['GET', 'POST'])
+def room_detail_page(room_name):
+    room_edit_form = RoomEditForm()
+    Session = sessionmaker(engine)
+
+    if request.method == "POST":
+        if room_edit_form.validate_on_submit():
+            with Session() as session:
+                db_room = session.query(Room).filter_by(name=room_name).first()
+                db_room.capacity = room_edit_form.capacity.data
+                session.commit()
+                flash(f"Editace úspěšně provedena!", category='success')
+                return redirect(url_for('room_detail_page', room_name=room_name))
+
+    if room_edit_form.errors != {}: #If there are not errors from the validations
+        for err_msg in room_edit_form.errors.values():
+            flash(f'Chyba během editace místnosti: {err_msg}', category='danger')
+
+    if request.method == "GET":
+        with Session() as session:
+            db_room = session.query(Room).filter_by(name=room_name).first()
+            room_edit_form.capacity.data = db_room.capacity
+            return render_template('room_edit.html', form=room_edit_form)
 
 
 @app.route('/logout')
 def logout_page():
     logout_user()
-    flash("You have been logged out!", category='info')
+    flash("Odhlášení proběhlo úspěšně!", category='info')
     return redirect(url_for("home_page"))
 
 

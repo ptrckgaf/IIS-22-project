@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}
+Editace kurzu {{ course_name }}
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <h2>Detail kurzu:</h2>
+    <div class="container">
+        <form method="POST" class="form-register" style="color:white">
+            {{ courses_edit_form.hidden_tag() }}
+            <br>
+            {{ courses_edit_form.name.label() }}
+            {{ courses_edit_form.name(class="form-control", placeholder="Název") }}
+            {{ courses_edit_form.course_type.label() }}
+            {{ courses_edit_form.course_type(class="form-control", placeholder="Typ kurzu") }}
+            {{ courses_edit_form.description.label() }}
+            {{ courses_edit_form.description(class="form-control", placeholder="Popis kurzu") }}
+            {{ courses_edit_form.price.label() }}
+            {{ courses_edit_form.price(class="form-control", placeholder="Cena kurzu") }}
+            {{ courses_edit_form.users_limit.label() }}
+            {{ courses_edit_form.users_limit(class="form-control", placeholder="Limit kurzu") }}
+            <br>
+            {{ courses_edit_form.submit(class="btn btn-lg btn-block btn-primary") }}
+        </form>
+    </div>
+</body>
+{% endblock %}

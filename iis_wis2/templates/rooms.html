@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-Přehled užívatelů
+Přehled místností
 {% endblock %}
 
 {% block content %}
@@ -11,10 +11,8 @@ Přehled užívatelů
          <thead>
             <tr>
                 <!-- Your Columns HERE -->
-                <th scope="col">Login</th>
-                <th scope="col">Jméno</th>
-                <th scope="col">Email</th>
-                <th scope="col">Typ</th>
+                <th scope="col">Název</th>
+                <th scope="col">Kapacita</th>
                 <th scope="col"></th>
                 <th scope="col"></th>
             </tr>
@@ -22,14 +20,12 @@ Přehled užívatelů
          <tbody>
              <form method="post">
                  {{ form.hidden_tag() }}
-                {% for user in users %}
+                {% for room in rooms %}
                    <tr>
-                       <td>{{ user.login }}</td>
-                       <td>{{ user.username }}</td>
-                       <td>{{ user.email_address }}</td>
-                       <td>{{ user.user_type.name }}</td>
-                       <td><a class="btn btn-primary" href="{{ url_for('user_detail_page', user_login=user.login) }}">Editovat</a></td>
-                       <td><input name="deleted_user_name {{ user.login }}" id="{{ user.login }}" type="checkbox" value="{{ user.login }}"/></td>
+                       <td>{{ room.name }}</td>
+                       <td>{{ room.capacity }}</td>
+                       <td><a class="btn btn-primary" href="{{ url_for('room_detail_page', room_name=room.name) }}">Editovat</a></td>
+                       <td><input name="deleted_room_name {{ room.name }}" id="{{ room.name }}" type="checkbox" value="{{ room.name }}"/></td>
                    </tr>
                 {% endfor %}
                 <td>{{ form.submit(class="btn btn-lg btn-block btn-primary") }}</td>

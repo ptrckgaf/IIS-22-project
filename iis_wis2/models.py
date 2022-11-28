@@ -1,7 +1,7 @@
 import enum
 from iis_wis2 import Base, login_manager, engine, bcrypt
 from flask_login import UserMixin
-from sqlalchemy import Enum, Column, Integer, String, Table, ForeignKey, Date, Boolean, Time, DateTime
+from sqlalchemy import Enum, Column, Integer, String, Table, ForeignKey, Date, Boolean, Time
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, update
@@ -123,7 +123,7 @@ class Course(Base, UserMixin):
     day_of_the_week = Column(Enum(DaysOfTheWeek), nullable=False)
     start_time = Column(Time(), nullable=True)
     end_time = Column(Time(), nullable=True)
-    room_id = Column(Integer(), ForeignKey('room.id'), nullable=False)
+    room_name = Column(String(length=30), ForeignKey('room.name'), nullable=False)
     course_guarantor_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
     users_in_course = relationship(
         "User", secondary="users_have_registered_courses", back_populates="registered_courses")
@@ -136,20 +136,21 @@ class Term(Base, UserMixin):
     __tablename__ = "term"
     id = Column(Integer(), primary_key=True)
     name = Column(String(length=30), nullable=False)
-    term_type = Column(Enum(TermType), nullable=False)
+    type = Column(Enum(TermType), nullable=False)
     maximum_points = Column(Integer(), nullable=False)
     description = Column(String(length=1024))
-    start_time = Column(DateTime(), nullable=True)
-    end_time = Column(DateTime(), nullable=True)
+    date = Column(Date(), nullable=False)
+    start_time = Column(Time(), nullable=False)
+    end_time = Column(Time(), nullable=False)
     course_name = Column(String(length=30), ForeignKey('course.name'), nullable=True)
-    room_id = Column(Integer(), ForeignKey('room.id'), nullable=True)
+    room_name = Column(String(length=30), ForeignKey('room.name'), nullable=True)
     users_in_term = relationship(
         "User", secondary="users_have_registered_terms", back_populates="registered_terms")
 
 
 class Room(Base, UserMixin):
     __tablename__ = "room"
-    id = Column(Integer(), primary_key=True)
-    number = Column(String(length=30), nullable=False)
+    name = Column(String(length=30), primary_key=True)
+    capacity = Column(Integer(), nullable=False)
     terms = relationship('Term', backref='room')
     courses = relationship('Course', backref='room')

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}
+Učitelé kurzu {{ course_name }}
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <br>
+    <h2>Učitelé</h2>
+    <div class="container">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Login</th>
+                <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                 {{ deleting_teacher_from_course_form.hidden_tag() }}
+                 {% for teacher in teachers_in_course %}
+                 <tr>
+                     <td>{{ teacher.login }}</td>
+                     <td><input name="deleted_teacher_login {{ teacher.login }}" id="{{ teacher.login }}"
+                                type="checkbox" value="{{ teacher.login }}"/></td>
+                 </tr>
+                {% endfor %}
+                 <td>{{ deleting_teacher_from_course_form.submit(class="btn btn-lg btn-block btn-primary") }}</td>
+             </form>
+         </tbody>
+      </table>
+    </div>
+    <br>
+    <h2>Přidat učitele do kurzu</h2>
+    <div class="container">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Login</th>
+               <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                 {{ course_teacher_registration_form.hidden_tag() }}
+                 {% for teacher in teachers_not_in_course %}
+                 <tr>
+                     <td>{{ teacher.login }}</td>
+                     <td><input name="added_teacher_login {{ teacher.login }}" id="{{ teacher.login }}" type="checkbox" value="{{ teacher.login }}"/></td>
+                 </tr>
+               {% endfor %}
+                 <td>{{ course_teacher_registration_form.submit(class="btn btn-lg btn-block btn-primary") }} </td>
+             </form>
+         </tbody>
+      </table>
+    </div>
+</body>
+{% endblock %}

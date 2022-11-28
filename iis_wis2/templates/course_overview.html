@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}
+Detail kurzu {{ course_name }}
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <br>
+    <h2>Lektoři</h2>
+    <div class="container">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Login</th>
+                <th scope="col">Email</th>
+               <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                 {% for teacher in teachers %}
+                 <tr>
+                     <td>{{ teacher.login }}</td>
+                     <td>{{ teacher.email_address }}</td>
+                 </tr>
+               {% endfor %}
+             </form>
+         </tbody>
+      </table>
+    </div>
+
+    <h2>Studenti</h2>
+    <div class="container">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Login</th>
+                <th scope="col">Email</th>
+               <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                 {% for student in students %}
+                 <tr>
+                     <td>{{ student.login }}</td>
+                     <td>{{ student.email_address }}</td>
+                 </tr>
+               {% endfor %}
+             </form>
+         </tbody>
+      </table>
+    </div>
+</body>
+{% endblock %}

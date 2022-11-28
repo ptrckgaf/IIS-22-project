@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-    Účet uživatele
+    Register Page
 {% endblock %}
 
 {% block content %}
@@ -9,10 +9,10 @@
         <form method="POST" class="form-register" style="color:white">
             {{ form.hidden_tag() }}
             <br>
-            {{ form.username.label() }}
-            {{ form.username(class="form-control", placeholder="Jméno") }}
-            {{ form.email_address.label() }}
-            {{ form.email_address(class="form-control", placeholder="Email") }}
+            {{ form.name.label() }}
+            {{ form.name(class="form-control", placeholder="Název") }}
+            {{ form.capacity.label() }}
+            {{ form.capacity(class="form-control", placeholder="Kapacita") }}
             <br>
             {{ form.submit(class="btn btn-lg btn-block btn-primary") }}
         </form>

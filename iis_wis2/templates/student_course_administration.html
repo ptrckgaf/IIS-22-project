@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}
+Studenti kurzu {{ course_name }}
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <br>
+    <h2>Studenti</h2>
+    <div class="container">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Login</th>
+                <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                 {{ deleting_user_from_course_form_form.hidden_tag() }}
+                 {% for login in confirmed_students_logins %}
+                 <tr>
+                     <td>{{ login }}</td>
+                     <td><input name="deleted_user_login {{ login }}" id="{{ login }}" type="checkbox" value="{{ login }}"/></td>
+                 </tr>
+                {% endfor %}
+                 <td>{{ deleting_user_from_course_form_form.submit(class="btn btn-lg btn-block btn-primary") }}</td>
+             </form>
+         </tbody>
+      </table>
+    </div>
+    <br>
+    <h2>Nepotvrzené registrace studentů do kurzu</h2>
+    <div class="container">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Login</th>
+               <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                 {{ course_registration_form.hidden_tag() }}
+                 {% for login in unconfirmed_students_logins %}
+                 <tr>
+                     <td>{{ login }}</td>
+                     <td><input name="confirmed_student_login {{ login }}" id="{{ login }}" type="checkbox" value="{{ login }}"/></td>
+                 </tr>
+               {% endfor %}
+                 <td>{{ course_registration_form.submit(class="btn btn-lg btn-block btn-primary") }} </td>
+             </form>
+         </tbody>
+      </table>
+    </div>
+</body>
+{% endblock %}
