@@ -1,10 +1,10 @@
 from iis_wis2 import app, engine
 from flask import render_template, redirect, url_for, flash, request
-from iis_wis2.models import User, Course, UserType, UsersHaveRegisteredCourses, Term, Room
+from iis_wis2.models import User, Course, UserType, UsersHaveRegisteredCourses, Term, Room, UsersHaveRegisteredTerms
 from iis_wis2.forms import RegisterForm, LoginForm, CoursesForm, MyCoursesForm, UserAccountForm, CourseCreateForm, \
     CoursesToConfirmForm, CourseEditForm, CourseRegistrationForm, TermsForm, UsersForm, RoomCreateForm, RoomsForm, \
     RoomEditForm, DeletingUserFromCourseForm, CourseTeacherRegistrationForm, DeletingTeacherFromCourseForm, \
-    TermCreateForm, TermsInCourseForm
+    TermCreateForm, TermsInCourseForm, StudentsInTermForm, StudentsEvaluationInTermForm
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.orm import sessionmaker
 from datetime import date
@@ -401,6 +401,75 @@ def term_create_page(course_name):
         return render_template('term_create.html', form=form, course_name=course_name)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route('/term_detail_page/<term_id>', methods=['GET', 'POST'])
+def term_detail_page(term_id):
+    students_evaluation_in_term_form = StudentsEvaluationInTermForm()
+    students_in_term_form = StudentsInTermForm()
+    Session = sessionmaker(engine)
+
+    if request.method == "POST":
+        if students_evaluation_in_term_form.validate_on_submit():
+            with Session() as session:
+                for login, obtained_points in request.form.items():
+                    student = session.query(User).filter_by(login=login).first()
+                    if student:
+                        student_with_obtained_points = session.query(UsersHaveRegisteredTerms) \
+                            .filter_by(term_id=term_id) \
+                            .filter_by(user_id=student.id) \
+                            .first()
+                        student_with_obtained_points.obtained_points = obtained_points
+                session.commit()
+
+        if students_in_term_form.validate_on_submit():
+            with Session() as session:
+                term = session.query(Term).filter_by(id=term_id).first()
+                deleted_students_logins = [value for elem, value in request.form.items()
+                                               if elem.startswith('deleted_student_login')]
+                for student in term.users_in_term:
+                    if student.login in deleted_students_logins:
+                        term.users_in_term.remove(student)
+                session.commit()
+
+        return redirect(url_for('term_detail_page', term_id=term_id))
+
+    if request.method == "GET":
+        with Session() as session:
+            term = session.query(Term).filter_by(id=term_id).first()
+            logins_with_obtained_points = {}
+
+            for student_in_term in term.users_in_term:
+                student_with_obtained_points = session.query(UsersHaveRegisteredTerms) \
+                    .filter_by(term_id=term_id) \
+                    .filter_by(user_id=student_in_term.id)\
+                    .first()
+
+                logins_with_obtained_points[student_in_term.login] = student_with_obtained_points.obtained_points
+
+            return render_template('term_detail.html',
+                                   students_evaluation_in_term_form=students_evaluation_in_term_form,
+                                   students_in_term_form=students_in_term_form,
+                                   students=logins_with_obtained_points)
+
+
 @app.route('/terms_in_course_page/<course_name>', methods=['GET', 'POST'])
 def terms_in_course_page(course_name):
     form = TermsInCourseForm()
@@ -429,9 +498,51 @@ def terms_in_course_page(course_name):
                                    course_name=course_name)
 
 
+
+
+
+
+class StudentCourseOverview():
+    def __init__(self, login, email_address, obtained_points):
+        self.login = login
+        self.email_address = email_address
+        self.obtained_points = obtained_points
+
 @app.route('/course_overview_page/<course_name>', methods=['GET', 'POST'])
 def course_overview_page(course_name):
-    return render_template('course_overview.html', students=[], teachers=[])
+    Session = sessionmaker(engine)
+
+    with Session() as session:
+        course = session.query(Course).filter_by(name=course_name).first()
+        students_obtained_points = []
+
+        for student in course.users_in_course:
+            student_overview = StudentCourseOverview(student.login, student.email_address, 0)
+
+            for term in course.terms:
+                student_with_obtained_points = session.query(UsersHaveRegisteredTerms) \
+                    .filter_by(term_id=term.id) \
+                    .filter_by(user_id=student.id) \
+                    .first()
+                student_overview.obtained_points += student_with_obtained_points.obtained_points
+            students_obtained_points.append(student_overview)
+
+        return render_template('course_overview.html', students=students_obtained_points,
+                               teachers=course.teachers_in_course)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @app.route('/course_edit_page/<course_name>', methods=['GET', 'POST'])

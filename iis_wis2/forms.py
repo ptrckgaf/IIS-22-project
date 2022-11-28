@@ -127,6 +127,14 @@ class TermsInCourseForm(FlaskForm):
     submit = SubmitField(label='Odstranit vybrané termíny z kurzu')
 
 
+class StudentsEvaluationInTermForm(FlaskForm):
+    submit = SubmitField(label='Uložit hodnocení')
+
+
+class StudentsInTermForm(FlaskForm):
+    submit = SubmitField(label='Odstranit studenty z termínu')
+
+
 class TermCreateForm(FlaskForm):
     name = StringField(label='Název:', validators=[DataRequired()])
     type = SelectField(label='Typ:', validators=[DataRequired()],

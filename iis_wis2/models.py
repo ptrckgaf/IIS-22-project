@@ -18,9 +18,10 @@ class CourseType(enum.Enum):
 
 
 class TermType(enum.Enum):
-    lecture = 'prednaska'
-    exercise = 'cviceni'
+    lecture = 'přednáška'
+    exercise = 'cvičení'
     exam = 'test'
+
 
 class CourseLanguage(enum.Enum):
     czech = 'cz'
