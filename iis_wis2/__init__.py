@@ -6,7 +6,7 @@ from flask_login import LoginManager
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ec9439cfc6c796ae2029594d'
-engine = create_engine('mysql+mysqldb://sql7581527:B97hnuNZjK@sql7.freemysqlhosting.net:3306/sql7581527')
+engine = create_engine('mysql+mysqldb://sql7581590:C3JvfZBW1z@sql7.freemysqlhosting.net:3306/sql7581590')
 Base = declarative_base()
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
