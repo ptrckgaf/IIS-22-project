@@ -4,7 +4,6 @@ from flask_login import UserMixin
 from sqlalchemy import Enum, Column, Integer, String, Table, ForeignKey, Date, Boolean, Time
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select, update
 
 
 class UserType(enum.Enum):
@@ -13,29 +12,29 @@ class UserType(enum.Enum):
 
 
 class CourseType(enum.Enum):
-    compulsory = 'povinný'
-    optional = 'volitelný'
+    compulsory = 1
+    optional = 2
 
 
 class TermType(enum.Enum):
-    lecture = 'přednáška'
-    exercise = 'cvičení'
-    exam = 'test'
+    lecture = 1
+    exercise = 2
+    exam = 3
 
 
 class CourseLanguage(enum.Enum):
-    czech = 'cz'
-    english = 'en'
+    czech = 1
+    english = 2
 
 
 class DaysOfTheWeek(enum.Enum):
-    monday = 'Pondělí'
-    tuesday = 'Úterý'
-    wednesday = 'Středa'
-    thursday = 'Čtvrtek'
-    friday = 'Pátek'
-    saturday = 'Sobota'
-    sunday = 'Neděle'
+    Monday = 1
+    Tuesday = 2
+    Wednesday = 3
+    Thursday = 4
+    Friday = 5
+    Saturday = 6
+    Sunday = 7
 
 
 @login_manager.user_loader
@@ -116,15 +115,13 @@ class Course(Base, UserMixin):
     course_type = Column(Enum(CourseType), nullable=False)
     language = Column(Enum(CourseLanguage), nullable=False)
     credit_count = Column(Integer(), nullable=False)
-    grade = Column(String(length=1), nullable=False)
-    price = Column(Integer(), nullable=False)
+    price = Column(Integer(), nullable=True)
     news = Column(String(length=1024))
     confirmed = Column(Boolean(), nullable=False)
     users_limit = Column(Integer(), nullable=False)
-    day_of_the_week = Column(Enum(DaysOfTheWeek), nullable=False)
+    day_of_the_week = Column(Enum(DaysOfTheWeek), nullable=True)
     start_time = Column(Time(), nullable=True)
     end_time = Column(Time(), nullable=True)
-    room_name = Column(String(length=30), ForeignKey('room.name'), nullable=False)
     course_guarantor_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
     users_in_course = relationship(
         "User", secondary="users_have_registered_courses", back_populates="registered_courses")
@@ -154,4 +151,3 @@ class Room(Base, UserMixin):
     name = Column(String(length=30), primary_key=True)
     capacity = Column(Integer(), nullable=False)
     terms = relationship('Term', backref='room')
-    courses = relationship('Course', backref='room')

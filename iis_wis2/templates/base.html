@@ -57,10 +57,13 @@
                         <a class="nav-link" href="{{ url_for('studied_courses_page') }}">Studované kurzy</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_courses_page') }}">Vyučované kurzy</a>
+                        <a class="nav-link" href="{{ url_for('taught_courses_page') }}">Vyučované kurzy</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_courses_page') }}">Garantované kurzy</a>
+                        <a class="nav-link" href="{{ url_for('guaranteed_courses_page') }}">Garantované kurzy</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('course_create_page') }}">Vytvořit nový kurz</a>
                     </li>
                 {% endif %}
             {% else %}

@@ -43,12 +43,12 @@ class UserAccountForm(FlaskForm):
 class CourseCreateForm(FlaskForm):
     name = StringField(label='Název:', validators=[Length(min=2, max=30), DataRequired()])
     course_type = SelectField(label='Typ kurzu:', validators=[DataRequired()],
-                            choices=[course_type.value for course_type in CourseType])
+                            choices=[course_type.name for course_type in CourseType])
     language = SelectField(label='Jazyk kurzu:', validators=[DataRequired()],
-                           choices=[language.value for language in CourseLanguage])
+                           choices=[language.name for language in CourseLanguage])
     description = StringField(label='Popis:', validators=[Length(min=0, max=1024), DataRequired()])
     credits = IntegerField(label='Počet kreditov:', validators=[DataRequired()])
-    users_limit = IntegerField(label='Limit kurzu:', validators=[DataRequired()])
+    users_limit = IntegerField(label='Limit studentů v kurzu:', validators=[DataRequired()])
     submit = SubmitField(label='Odeslat žádost o registraci kurzu')
 
 
@@ -143,14 +143,14 @@ class TermCreateForm(FlaskForm):
     date = DateField(label='Datum:', format='%Y-%m-%d', default=date.today(), validators=[DataRequired()])
     start_time = TimeField(label='Čas začátku:', validators=[DataRequired()])
     end_time = TimeField(label='Čas konce:', validators=[DataRequired()])
-
-    Session = sessionmaker(engine)
-    with Session() as session:
-        rooms = session.query(Room).all()
-        room_name = SelectField(label='Název místnosti:', validators=[DataRequired()],
-                            choices=[room.name for room in rooms])
-
+    room_name = SelectField(label='Název místnosti:', validators=[DataRequired()])
     submit = SubmitField(label='Vytvořit termín')
+
+    def load_room_names(self):
+        Session = sessionmaker(engine)
+        with Session() as session:
+            rooms = session.query(Room).all()
+            self.room_name.choices = [room.name for room in rooms]
 
 
 class TermRegisterForm(FlaskForm):

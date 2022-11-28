@@ -8,7 +8,6 @@ from iis_wis2.forms import RegisterForm, LoginForm, CoursesForm, MyCoursesForm, 
     TermRegisterForm, TermUnregisterForm
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.orm import sessionmaker
-from datetime import date
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -130,6 +129,7 @@ def user_account_page():
 
                 db_user.username = user_account_form.username.data
                 session.commit()
+                flash(f"Editace úspěšně provedena!", category='success')
                 return redirect(url_for('user_account_page'))
 
     if request.method == "GET":
@@ -206,16 +206,6 @@ def user_create_page():
         for err_msg in form.errors.values():
             flash(f'Chyba během vytváření uživatele: {err_msg}', category='danger')
     return render_template('user_create.html', form=form)
-
-
-@app.route('/guaranteed_courses_page', methods=['GET', 'POST'])
-def guaranteed_courses_page():
-    Session = sessionmaker(engine)
-
-    if request.method == "GET":
-        with Session() as session:
-            courses = session.query(Course).all()
-            return render_template('guaranteed_courses.html', courses=courses)
 
 
 @app.route('/user_detail_page/<user_login>', methods=['GET', 'POST'])
@@ -375,6 +365,7 @@ def teacher_course_administration_page(course_name):
 @app.route('/term_create_page/<course_name>', methods=['GET', 'POST'])
 def term_create_page(course_name):
     form = TermCreateForm()
+    form.load_room_names()
     Session = sessionmaker(engine)
 
     if request.method == "POST":
@@ -774,33 +765,19 @@ def term_registration_page(course_name):
                                    registered_terms_overviews=registered_terms_overviews)
 
 
-@app.route('/terms', methods=['GET', 'POST'])
-def terms_page():
+@app.route('/taught_courses_page', methods=['GET', 'POST'])
+def taught_courses_page():
     Session = sessionmaker(engine)
-    terms_form = TermsForm()
+    with Session() as session:
+        db_user = session.query(User).filter_by(id=current_user.id).first()
+        return render_template('admin_courses.html', courses=db_user.teacher_in_courses)
 
-    if request.method == "POST":
-        with Session() as session:
-            db_user = session.query(User).filter_by(id=current_user.id).first()
-            terms = session.query(Term).all()
-            db_user.registered_terms.clear()
-            registered_terms = [value for elem, value in request.form.items()
-                                  if elem.startswith('registered_term_name')]
 
-            for term in terms:
-                if term.name in registered_terms:
-                    db_user.registered_terms.append(term)
-
-            session.commit()
-            return redirect(url_for('terms_page'))
+@app.route('/guaranteed_courses_page', methods=['GET', 'POST'])
+def guaranteed_courses_page():
+    Session = sessionmaker(engine)
 
     if request.method == "GET":
         with Session() as session:
-            terms = session.query(Term).all()
-            if current_user.is_authenticated:
-                db_user = session.query(User).filter_by(id=current_user.id).first()
-                registered_terms_names = [term.name for term in db_user.registered_terms]
-                return render_template('terms.html', terms=terms, form=terms_form,
-                                       registered_terms_names=registered_terms_names)
-            else:
-                return render_template('terms.html', terms=terms, form=terms_form)
+            db_user = session.query(User).filter_by(id=current_user.id).first()
+            return render_template('admin_courses.html', courses=db_user.guarantor_of_courses)
