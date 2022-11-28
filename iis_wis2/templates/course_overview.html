@@ -6,7 +6,7 @@ Detail kurzu {{ course_name }}
 {% block content %}
 <body class="text-center">
     <br>
-    <h2>Lektoři</h2>
+    <h2>Učitelé</h2>
     <div class="container">
       <table class="table table-hover table-dark">
          <thead>
@@ -14,7 +14,6 @@ Detail kurzu {{ course_name }}
                 <!-- Your Columns HERE -->
                 <th scope="col">Login</th>
                 <th scope="col">Email</th>
-               <th scope="col"></th>
             </tr>
          </thead>
          <tbody>
@@ -29,7 +28,7 @@ Detail kurzu {{ course_name }}
          </tbody>
       </table>
     </div>
-
+    </br>
     <h2>Studenti</h2>
     <div class="container">
       <table class="table table-hover table-dark">
@@ -38,7 +37,7 @@ Detail kurzu {{ course_name }}
                 <!-- Your Columns HERE -->
                 <th scope="col">Login</th>
                 <th scope="col">Email</th>
-               <th scope="col"></th>
+                <th scope="col">Získané body</th>
             </tr>
          </thead>
          <tbody>
@@ -47,6 +46,7 @@ Detail kurzu {{ course_name }}
                  <tr>
                      <td>{{ student.login }}</td>
                      <td>{{ student.email_address }}</td>
+                     <td>{{ student.obtained_points }}</td>
                  </tr>
                {% endfor %}
              </form>

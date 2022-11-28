@@ -20,6 +20,7 @@ Termíny kurzu {{ course_name }}
                 <th scope="col">Čas konce</th>
                 <th scope="col">Název místnosti</th>
                 <th scope="col"></th>
+                <th scope="col"></th>
             </tr>
          </thead>
          <tbody>
@@ -34,6 +35,7 @@ Termíny kurzu {{ course_name }}
                      <td>{{ term.start_time }}</td>
                      <td>{{ term.end_time }}</td>
                      <td>{{ term.room_name }}</td>
+                     <td><a class="btn btn-primary" href="{{ url_for('term_detail_page', term_id=term.id) }}">Detail</a></td>
                      <td><input name="deleted_term_id {{ term.id }}" id="{{ term.id }}" type="checkbox" value="{{ term.id }}"/></td>
                  </tr>
                 {% endfor %}

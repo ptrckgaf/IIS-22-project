@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}
+Detail termínu
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <br>
+    <h2>Hodnocení studentů</h2>
+    <div class="container">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Login</th>
+                <th scope="col">Získané body z termínu</th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                 {{ students_evaluation_in_term_form.hidden_tag() }}
+                 {% for login, obtained_points in students.items() %}
+                 <tr>
+                     <td>{{ login }}</td>
+                     <td><input name="{{ login }}" type="number" min="0" value="{{ obtained_points }}"/></td>
+                 </tr>
+                {% endfor %}
+                 <td>{{ students_evaluation_in_term_form.submit(class="btn btn-lg btn-block btn-primary") }}</td>
+             </form>
+         </tbody>
+      </table>
+    </div>
+    <br>
+    <h2>Studenti</h2>
+    <div class="container">
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Login</th>
+               <th scope="col"></th>
+            </tr>
+         </thead>
+         <tbody>
+             <form method="post">
+                 {{ students_in_term_form.hidden_tag() }}
+                 {% for login, obtained_points in students.items() %}
+                 <tr>
+                     <td>{{ login }}</td>
+                     <td><input name="deleted_student_login {{ login }}"
+                                id="{{ login }}" type="checkbox" value="{{ login }}"/></td>
+                 </tr>
+               {% endfor %}
+                 <td>{{ students_in_term_form.submit(class="btn btn-lg btn-block btn-primary") }} </td>
+             </form>
+         </tbody>
+      </table>
+    </div>
+</body>
+{% endblock %}
