@@ -515,7 +515,6 @@ def course_overview_page(course_name):
                     .first()
                 if student_with_obtained_points:
                     student_overview.obtained_points += student_with_obtained_points.obtained_points
-                students_obtained_points.append(student_overview)
             students_obtained_points.append(student_overview)
 
         return render_template('course_overview.html', students=students_obtained_points,
